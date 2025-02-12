@@ -13,6 +13,8 @@ const closeChatbot = document.querySelector("#close-chatbot")
 const API_KEY = "AIzaSyAy5H5JSK3Zysa8P72BgBv2tQ0IQaR-ciI";
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
+
+
 const userData = {
   message: null,
   file: {
@@ -21,6 +23,7 @@ const userData = {
 }
 }
 
+const chatHistory = [];
 const initialInputHeight = messageInput.scrollHeight
 
 
@@ -35,15 +38,20 @@ return div;
 // Generate Bot Response using API
 const generateBotResponse = async (incomingMessageDiv) => {
   const messageElement = incomingMessageDiv.querySelector(".message-text")
+  
+  // add user message to chat history
+  chatHistory.push({
+    role: "user",
+    parts: [{text: userData.message}, ...(userData.file.data ? [{inline_data: userData.file}] : [])]
+  })
+
 
   // API request option
   const requestOptions = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [{
-        parts: [{text: userData.message}, ...(userData.file.data ? [{inline_data: userData.file}] : [])]
-      }] 
+      contents: chatHistory 
     })
   }
 
@@ -56,6 +64,11 @@ try {
     // Extract and display bot response text
     const apiResponseText = data.candidates[0].content.parts[0].text.replace(/\*\*(.*?)\*\*/g, "$1").trim();
     messageElement.innerText = apiResponseText
+
+    // Add bot response to chat history
+    chatHistory.push({
+      role: "model",
+      parts: [{text: apiResponseText}]})
 } catch (error) {
   // handles error in API response
   console.log(error)
