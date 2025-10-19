@@ -1,0 +1,2 @@
+# Securely ignore the file containing API keys
+.env

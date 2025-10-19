@@ -10,8 +10,7 @@ const closeChatbot = document.querySelector("#close-chatbot")
 
 
 // API setup
-const API_KEY = "AIzaSyAy5H5JSK3Zysa8P72BgBv2tQ0IQaR-ciI";
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+const API_URL = "http://localhost:3000/api/chat";
 
 
 
@@ -59,19 +58,26 @@ const generateBotResponse = async (incomingMessageDiv) => {
 try {
   const response = await fetch(API_URL, requestOptions)
   const data = await response.json();
-  if(!response.ok) throw new Error(data.error.message)
-   
+  
+  // 1. CHECK FOR ERRORS FROM THE PROXY SERVER
+  if(!response.ok) {
+    // The proxy should send a 500 status and an 'error' key on failure
+    throw new Error(data.error || "An unknown error occurred on the server.")
+  }
+
     // Extract and display bot response text
-    const apiResponseText = data.candidates[0].content.parts[0].text.replace(/\*\*(.*?)\*\*/g, "$1").trim();
+    // The proxy server sends back a simple 'text' key.
+    const apiResponseText = data.text.trim();
     messageElement.innerText = apiResponseText
 
     // Add bot response to chat history
     chatHistory.push({
       role: "model",
-      parts: [{text: apiResponseText}]})
+      parts: [{text: apiResponseText}]
+    })
 } catch (error) {
   // handles error in API response
-  console.log(error)
+  console.log("Chatbot Error", error)
   messageElement.innerText = error.message;
   messageElement.style.color = "#ff0000"
 } finally {
