@@ -10,7 +10,7 @@ const closeChatbot = document.querySelector("#close-chatbot")
 
 
 // API setup
-const API_URL = "http://localhost:3000/api/chat";
+const API_URL = "https://chatbot-coral-alpha.vercel.app/api/chat";
 
 
 
