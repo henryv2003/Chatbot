@@ -1,2 +1,8 @@
-# Securely ignore the file containing API keys
+# Dependency directories
+node_modules
+
+# Environment variables (CRITICAL: Do not push API keys)
 .env
+
+# Vercel deployment cache
+.vercel
