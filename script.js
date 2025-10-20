@@ -56,13 +56,26 @@ const generateBotResponse = async (incomingMessageDiv) => {
 
   //Fetch bot response from API
 try {
-  const response = await fetch(API_URL, requestOptions)
-  const data = await response.json();
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    // Headers and body
+  });
   
   // 1. CHECK FOR ERRORS FROM THE PROXY SERVER
   if(!response.ok) {
     // The proxy should send a 500 status and an 'error' key on failure
-    throw new Error(data.error || "An unknown error occurred on the server.")
+    throw new Error("Failed to communicate with the chat proxy")
+  }
+
+  const data = await response.json()
+
+  const botMessage = data.text;
+
+  if (botMessage && typeof botMessage === 'string') {
+    handleOutgoingMessage(botMessage.trim(), 'bot')
+  }else {
+    handleOutgoingMessage("Error: Received invalid response from server.", 'bot');
+    console.error('invalid response data:', data)
   }
 
     // Extract and display bot response text
