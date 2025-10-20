@@ -678,7 +678,7 @@ height: 100%;
 
 border-radius: 0;
 
-width: 100%;
+width: 80%;
 
 }
 
@@ -693,7 +693,7 @@ padding: 12px 15px;
 
 .chat-body{
 
-height: calc(100% - 55px);
+height: calc(90% - 55px);
 
 padding: 25px 15px;
 
