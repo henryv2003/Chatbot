@@ -406,5 +406,54 @@ body.show-emoji-picker em-emoji-picker {
 }
 
 .chat-form .file-upload-wrapper.file-uploaded #file-cancel {
-  opacity: 0;
-}}
+  /* FIX: Ensure the file-cancel button is visible and not hidden by the send button */
+  display: block;
+  opacity: 1;
+  z-index: 10; /* Ensure it is above other controls if they overlap */
+}
+
+/* FIX: Ensure the hidden file-upload button stays hidden when file is uploaded */
+.chat-form .file-upload-wrapper.file-uploaded #file-upload {
+  display: none;
+}
+
+/* FIX: Ensure that the file-upload wrapper elements are not absolutely positioned in mobile,
+   or if they are, they don't cover other controls. The fix above should be sufficient,
+   but let's confirm the base positioning for absolute elements in the wrapper */
+
+.chat-form .file-upload-wrapper :where(img, button) {
+  position: relative; /* Changed from absolute to relative to respect flex layout */
+  /* Remove position absolute if they are inside the flex container (.chat-controls) for mobile */
+}
+
+.chat-form .file-upload-wrapper :where(img, #file-cancel),
+.chat-form .file-upload-wrapper.file-uploaded #file-upload {
+  display: none;
+}
+
+.chat-form .file-upload-wrapper.file-uploaded img,
+.chat-form .file-upload-wrapper.file-uploaded:hover #file-cancel {
+  display: block;
+}
+
+/* Revert the specific mobile opacity rule on file-cancel that might be causing the issue
+   if the elements were still absolute: */
+/* .chat-form .file-upload-wrapper.file-uploaded #file-cancel {
+  opacity: 0; <-- REMOVED/FIXED
+} */
+
+/* New rule to ensure only the cancel button shows in the wrapper when a file is present on mobile */
+.chat-form .file-upload-wrapper.file-uploaded #file-upload {
+  display: none !important;
+}
+
+.chat-form .file-upload-wrapper.file-uploaded #file-cancel {
+  display: block !important;
+  opacity: 1 !important;
+}
+
+.chat-form .file-upload-wrapper.file-uploaded img {
+  display: block !important;
+}
+
+}
