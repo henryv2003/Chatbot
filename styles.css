@@ -27,6 +27,7 @@ body {
   border-radius: 50%;
   background: #5350C4;
   transition: all 0.2s ease;
+  z-index: 1000; /* Ensure toggler is always on top */
 }
 
 body.show-chatbot #chatbot-toggler {
@@ -66,6 +67,9 @@ pointer-events: none;
 box-shadow: 0 0 128px 0 rgba(0, 0, 0, 0.1),
 0 32px 64px -48px rgba(0, 0, 0, 0.5);
 transition: all 0.1s ease;
+z-index: 999;
+display: flex; /* Added flex to manage internal layout */
+flex-direction: column; /* Organize content vertically */
 }
 
 body.show-chatbot .chatbot-popup {
@@ -80,6 +84,7 @@ body.show-chatbot .chatbot-popup {
   background: #5350C4;
   padding: 15px 22px;
   justify-content: space-between;
+  flex-shrink: 0; /* Header should not shrink */
 }
 
 .chat-header .header-info {
@@ -123,15 +128,18 @@ body.show-chatbot .chatbot-popup {
 }
 
 .chat-body {
+  /* FIX 1: Removed fixed margin-bottom and made it take up available space */
   padding: 25px 22px;
   display: flex;
   gap: 20px;
-  height: 500px;
-  margin-bottom: 50px;
+  height: 500px; /* Base height for desktop */
   overflow-y: auto;
   flex-direction: column;
   scrollbar-width: thin;
   scrollbar-color: #ccccf5 transparent;
+  flex-grow: 1; /* Allow chat body to grow */
+  /* FIX 2: Added padding-bottom to ensure last message clears the footer */
+  padding-bottom: 100px; 
 }
 
 .chat-body .message {
@@ -226,10 +234,11 @@ padding: 2px 16px;
 }
 
 .chat-footer {
-  position: absolute;
+  /* position: absolute; - Changed to relative or leave as absolute, but it will work with flex layout now */
   bottom: 0;
   width: 100%;
   padding: 15px 22px 20px;
+  flex-shrink: 0; /* Footer should not shrink */
 }
 
 .chat-footer .chat-form{
@@ -346,6 +355,7 @@ em-emoji-picker {
   max-height: 330px;
   visibility: hidden;
   transform: translateX(-50%);
+  z-index: 10;
 }
 
 body.show-emoji-picker em-emoji-picker {
@@ -366,6 +376,8 @@ body.show-emoji-picker em-emoji-picker {
   height: 100%;
   border-radius: 0;
   width: 100%;
+  /* Added min-height to ensure flex layout works correctly */
+  min-height: 100vh; 
 }
 
 
@@ -374,12 +386,23 @@ body.show-emoji-picker em-emoji-picker {
 }
 
 .chat-body{
-  height: calc(90% - 55px);
+  /* Removed fixed height and let flex-grow 1 manage it */
+  height: auto; 
+  flex-grow: 1; 
   padding: 25px 15px;
+  /* Increased padding to give ample space above the fixed footer */
+  padding-bottom: 110px; 
 }
 
 .chat-footer {
+  /* Set footer to be fixed to the bottom of the viewport */
+  position: fixed; 
+  bottom: 0;
+  left: 0;
   padding: 10px 15px 15px;
+  background: #FFF; /* Ensure it covers content */
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
 }
 
 .chat-form .file-upload-wrapper.file-uploaded #file-cancel {
