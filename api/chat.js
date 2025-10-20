@@ -1,59 +1,95 @@
-// server.js
+// api/chat.js (Your Vercel Serverless Function)
 
-// 1. Load environment variables from .env file
-require('dotenv').config();
+// 1. Load environment variables (dotenv is handled by Vercel for env vars)
+// We just need the key from the environment
 const API_KEY = process.env.GEMINI_API_KEY;
 
-// --- FIX: Import the class for the SDK ---
+// 2. Import the class for the SDK
 const { GoogleGenAI } = require('@google/genai');
 
-// 3. Initialize the AI client and Model
+// 3. Initialize the AI client
 if (!API_KEY) {
-    return (req, res) => res.status(500).send("error: GEMINI_API_KEY is missing ");
+    // If the key is missing, return an error function immediately
+    module.exports = (req, res) => res.status(500).send("Error: GEMINI_API_KEY is missing from Vercel Environment Variables.");
+    return;
 }
 
-// Initialize the client
 const ai = new GoogleGenAI({ apiKey: API_KEY });
+const MODEL_NAME = "gemini-2.5-flash";
 
-// Api chat endpoint
+
+// 4. Api chat endpoint
 module.exports = async (req, res) => {
-  // --- Manual Middleware Logic ---
-  if (req.method !== "POST") {
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow CORS
+    
+    // Set general CORS headers for all responses
+    res.setHeader('Access-Control-Allow-Origin', '*'); 
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(200).end();
-  }
+    res.setHeader('Content-Type', 'application/json');
 
-  // CORS headers for response 
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Content-type', 'Application/json');
-
-  // Extract the body
-  const { contents } = req.body;
-  const MODEL_NAME = "gemini-2.5-flash";
-
-  try {
-      // validation
-      if(!contents) {
-        return res.status(400).json({error: "Request body is missing 'contents'."})
-      }
-
-      const response = await ai.models.generateContent({
-        model: MODEL_NAME,
-        contents: contents
-      });
-
-    // Extract and send the text 
-      const responseText = response.text;
-      res.json({ rext: response.text });
-  
-    } catch (error) {
-      console.error("Gemini API error:", error.message);
-      res.status(500).json({
-        error: "Failed to communicate with the gemini API",
-        details: error.message
-      });
+    // Handle OPTIONS/preflight request
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    
+    // Only proceed if it's a POST request
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: "Method Not Allowed. Use POST." });
     }
 
+    let bodyData;
+    
+    // --- START: MANUAL BODY PARSING FIX ---
+    try {
+        // Read the body stream and parse it as JSON
+        bodyData = await new Promise((resolve, reject) => {
+            let body = '';
+            req.on('data', chunk => {
+                body += chunk.toString();
+            });
+            req.on('end', () => {
+                try {
+                    // Only try to parse if body content exists
+                    if (body) {
+                        resolve(JSON.parse(body));
+                    } else {
+                        resolve({}); 
+                    }
+                } catch (e) {
+                    reject(e); // Malformed JSON
+                }
+            });
+            req.on('error', reject);
+        });
+    } catch (error) {
+        console.error("Error parsing request body:", error);
+        return res.status(400).json({ error: "Invalid JSON in request body" });
+    }
+    // --- END: MANUAL BODY PARSING FIX ---
+
+    // Safely destructure the 'contents' property
+    const { contents } = bodyData;
+    
+    try {
+        if (!contents) {
+             return res.status(400).json({ error: "Request body is missing 'contents'. Ensure you are sending JSON with the 'contents' key." });
+        }
+        
+        // Call the Gemini API
+        const response = await ai.models.generateContent({
+            model: MODEL_NAME,
+            contents: contents
+        });
+
+        // Extract and send the response text
+        const responseText = response.text;
+        res.status(200).json({ text: responseText });
+
+    } catch (error) {
+        console.error("Gemini API Error:", error.message);
+        res.status(500).json({ 
+            error: "Failed to communicate with the Gemini API.",
+            details: error.message 
+        });
+    }
 };
