@@ -68,13 +68,14 @@ try {
   const data = await response.json()
 
   const botMessage = data.text;
-
+ /*
   if (botMessage && typeof botMessage === 'string') {
     handleOutgoingMessage(botMessage.trim(), 'bot')
   }else {
     handleOutgoingMessage("Error: Received invalid response from server.", 'bot');
     console.error('invalid response data:', data)
   }
+    */
 
     // Extract and display bot response text
     // The proxy server sends back a simple 'text' key.
